@@ -4,6 +4,7 @@ const express       = require('express');
 const path          = require('path');
 const cookieParser  = require('cookie-parser');
 const morgan        = require('morgan');
+const multer        = require('multer');
 const session       = require('express-session');
 const passport      = require('passport');
 const localStratg   = require('passport-local').Strategy;
@@ -14,8 +15,10 @@ var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade'); 
+app.set('view engine', 'jade');
 app.use(express.static(path.join(__dirname, 'public')));
+
+//app.use(multer({"dest": "./uploads"}));
 
 app.use(morgan('dev'));
 app.use(express.json());
@@ -23,6 +26,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// mysql
 app.use(myConn(mysql, {
   host: 'localhost'
 , user: 'root'
@@ -30,6 +34,17 @@ app.use(myConn(mysql, {
 , port: 3306
 , database: 'crud-nodejs'
 }, 'single')); // ??
+
+// sessions
+app.use(session({
+  secret: "secret",
+  saveUninitialized: true, 
+  resave: true
+}));
+
+// Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 //routes
 app.use('/', require('./routes/index'));
