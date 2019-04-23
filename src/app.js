@@ -6,6 +6,7 @@ const cookieParser  = require('cookie-parser');
 const morgan        = require('morgan');
 const multer        = require('multer');
 const session       = require('express-session');
+const validator     = require('express-validator');
 const passport      = require('passport');
 const localStratg   = require('passport-local').Strategy;
 const mysql		      = require('mysql');
@@ -44,7 +45,34 @@ app.use(session({
 
 // Passport
 app.use(passport.initialize());
-app.use(passport.session());
+app.use(passport.session()); 
+
+
+// validator
+// In this example, the formParam value is going to get morphed into form body format useful for printing.
+app.use(validator({
+  errorFormatter: function(param, msg, value) {
+      var namespace = param.split('.')
+      , root    = namespace.shift()
+      , formParam = root;
+
+    while(namespace.length) {
+      formParam += '[' + namespace.shift() + ']';
+    }
+    return {
+      param : formParam,
+      msg   : msg,
+      value : value
+    };
+  }
+}));
+
+//flash notification rendering
+app.use(require('connect-flash')());
+app.use(function (req, res, next) {
+  res.locals.messages = require('express-messages')(req, res);
+  next();
+});
 
 //routes
 app.use('/', require('./routes/index'));
